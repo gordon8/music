@@ -27,7 +27,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 ```bash
 # dev 依赖 babel-polyfill sass
 npm install babel-polyfill sass-loader node-sass vue-style-loader --D
-# babel-runtime vuex fastclick better-scroll
-npm install babel-runtime  vuex fastclick better-scroll --save
+# babel-runtime vuex fastclick better-scroll vue-lazyload
+npm install babel-runtime  vuex fastclick better-scroll vue-lazyload --save
 
 ```
