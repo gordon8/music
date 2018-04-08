@@ -3,6 +3,10 @@
     <div class="slide-group" ref="slideGroup">
       <slot></slot>
     </div>
+    <div class="dots">
+      <span v-for="(item, index) in dots" :key="index" class="dot"
+            :class="{'active': currentPageIndex === index}"></span>
+    </div>
   </div>
 </template>
 
@@ -40,17 +44,54 @@ export default {
     },
     showDot: {
       type: Boolean,
-      default: false
+      default: true
+    }
+  },
+  data() {
+    return {
+      dots: [],
+      currentPageIndex: 0
     }
   },
   watch: {
-
+    loop() {
+      this.update()
+    },
+    autoPlay() {
+      this.update()
+    },
+    speed() {
+      this.update()
+    },
+    threshold() {
+      this.update()
+    }
   },
-  mounted () {
+  beforeDestroy() {
+    this.clearTimeout(this.timer)
+  },
+  mounted() {
     this.update()
+
+    window.addEventListener('resize', () => {
+      if (!this.slide || !this.slide.enabled) {
+        return
+      }
+      clearTimeout(this.resizeTimer)
+      this.resizeTimer = setTimeout(() => {
+        if (this.slide.isInTransition) {
+          this._onScrollEnd()
+        } else {
+          if (this.autoPlay) {
+            this._play()
+          }
+        }
+        this.refresh()
+      }, 60)
+    })
   },
   methods: {
-    update () {
+    update() {
       if (this.slide) {
         this.slide.destroy()
       }
@@ -58,7 +99,11 @@ export default {
         this.init()
       })
     },
-    init () {
+    refresh() {
+      this._setSliderWidth(true)
+      this.slide.refresh()
+    },
+    init() {
       clearTimeout(this.timer)
       this.currentPageIndex = 0
       this._setSliderWidth()
@@ -71,7 +116,7 @@ export default {
         this._play()
       }
     },
-    _setSliderWidth () {
+    _setSliderWidth(isResize) {
       this.children = this.$refs.slideGroup.children
 
       let width = 0
@@ -82,15 +127,15 @@ export default {
         child.style.width = slideWidth + 'px'
         width += slideWidth
       }
-      if (this.loop) {
+      if (this.loop && !isResize) {
         width += 2 * slideWidth
       }
       this.$refs.slideGroup.style.width = width + 'px'
     },
-    _initDot () {
-
+    _initDot() {
+      this.dots = new Array(this.children.length)
     },
-    _initSlider () {
+    _initSlider() {
       this.slide = new BScroll(this.$refs.slide, {
         scrollX: true,
         scrollY: false,
@@ -119,14 +164,14 @@ export default {
         }
       })
     },
-    _onScrollEnd () {
+    _onScrollEnd() {
       let pageIndex = this.slide.getCurrentPage().pageX
       this.currentPageIndex = pageIndex
       if (this.autoPlay) {
         this._play()
       }
     },
-    _play () {
+    _play() {
       clearTimeout(this.timer)
       this.timer = setTimeout(() => {
         this.slide.next()
@@ -138,6 +183,7 @@ export default {
 
 <style scoped lang="scss" rel="stylesheet/scss" type="text/scss">
   @import "../../common/css/variable";
+
   .slide {
     position: relative;
     min-height: 1px;
@@ -166,6 +212,7 @@ export default {
       position: absolute;
       right: 0;
       left: 0;
+      bottom: 12px;
       text-align: center;
       font-size: 0;
       transform: translateZ(1px);
