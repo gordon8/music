@@ -26,6 +26,9 @@
           </ul>
         </div>
       </div>
+      <div v-show="mvList.length === 0" class="loading-wrap">
+        <loading></loading>
+      </div>
     </scroll>
   </div>
 </template>
@@ -35,6 +38,7 @@ import {getRecommend, getDiscList} from 'api/recommend'
 import {ERR_OK} from 'api/config'
 import Slide from 'base/slide/slide'
 import Scroll from 'base/scroll/scroll'
+import Loading from 'base/loading/loading'
 
 export default {
   name: 'recommend',
@@ -75,7 +79,8 @@ export default {
   },
   components: {
     Slide,
-    Scroll
+    Scroll,
+    Loading
   }
 }
 </script>
@@ -135,6 +140,13 @@ export default {
           }
         }
       }
+    }
+
+    .loading-wrap {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      transform: translate3d(0, -50%, 0);
     }
 
   }
