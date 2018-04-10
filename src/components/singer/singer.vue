@@ -1,6 +1,6 @@
 <template>
   <div class="singer">
-    <list-view></list-view>
+    <list-view :list="singerList"></list-view>
   </div>
 </template>
 
@@ -29,10 +29,8 @@ export default {
     },
     _getSingerList() {
       getSingerList().then((res) => {
-        console.log(res)
         if (res.code === ERR_OK) {
-          this.singerList = res.data.list
-          this._normalizeSinger(res.data.list)
+          this.singerList = this._normalizeSinger(res.data.list)
         }
       })
     },
@@ -45,9 +43,36 @@ export default {
       }
       list.forEach((item) => {
         if (map.hot.items.length < HOT_LENGTH) {
-          
+          map.hot.items.push(new Singer(item.Fsinger_mid, item.Fsinger_name))
         }
+
+        const key = item.Findex
+        if (!map[key]) {
+          map[key] = {
+            title: key,
+            items: []
+          }
+        }
+        map[key].items.push(new Singer(item.Fsinger_mid, item.Fsinger_name))
       })
+      let res = []
+      let hot = []
+      let others = []
+      for (let k in map) {
+        if (k === 'hot') {
+          hot.push(map[k])
+        } else {
+          let reg = /[A-Za-z]/
+          if (reg.test(map[k].title)) {
+            others.push(map[k])
+          }
+        }
+      }
+      others.sort(function (a, b) {
+        return a.title.charCodeAt() - b.title.charCodeAt()
+      })
+      res = hot.concat(others)
+      return res
     }
   },
   components: {
@@ -57,5 +82,10 @@ export default {
 </script>
 
 <style scoped lang="scss" rel="stylesheet/scss" type="text/scss">
-
+  .singer {
+    position: fixed;
+    top: 88px;
+    bottom: 0;
+    width: 100%;
+  }
 </style>
