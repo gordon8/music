@@ -1,7 +1,10 @@
 <template>
-  <scroll ref="scroll"
+  <scroll @scroll="scroll"
+          :listenScroll="listenScroll"
+          :probeType="probeType"
           :data="list"
-          class="list-view">
+          class="list-view"
+          ref="listview">
     <ul class="list">
       <li v-for="item in list" :key="item.title" class="item" ref="items">
         <h3 class="title">{{item.title}}</h3>
@@ -13,14 +16,18 @@
         </ul>
       </li>
     </ul>
-    <ul class="menu-list">
-      <li v-for="item in menuList" :key="item" class="menu-item">{{item}}</li>
+    <ul class="menu-list" @touchstart.stop.prevent="onMenuTouchStart">
+      <li v-for="(item, index) in menuList" :key="item" class="menu-item" :data-index="index"
+          :class="{'current': currentIndex === index}">
+        {{item}}
+      </li>
     </ul>
   </scroll>
 </template>
 
 <script type="text/ecmascript-6">
 import Scroll from 'base/scroll/scroll'
+import {getData} from 'common/js/dom'
 
 export default {
   name: 'listview',
@@ -34,7 +41,11 @@ export default {
   },
   data() {
     return {
-      listHeight: []
+      listHeight: [],
+      currentIndex: 0,
+      listenScroll: true,
+      probeType: 3,
+      scrollY: 0
     }
   },
   computed: {
@@ -47,10 +58,24 @@ export default {
     }
   },
   created() {
-    this.listenScroll = true
-    this.probeType = 3
   },
   methods: {
+    scroll(pos) {
+      this.scrollY = pos.y
+    },
+    onMenuTouchStart(e) {
+      let index = getData(e.target, 'index')
+      this._scrollTo(index)
+    },
+    _scrollTo(index) {
+      if (index === null) {
+        return
+      }
+      console.log(index)
+      this.scrollY = -this.listHeight[index]
+      console.log(this.$refs.listview)
+      this.$refs.listview.scrollToElement(this.$refs.items[index], 0)
+    },
     _calculateHeight() {
       if (this.listHeight.length > 0) {
         return
@@ -69,6 +94,21 @@ export default {
       setTimeout(() => {
         this._calculateHeight()
       }, 20)
+    },
+    scrollY() {
+      if (this.scrollY >= 0) {
+        this.currentIndex = 0
+        return
+      }
+      let scrollY = Math.abs(this.scrollY)
+      for (let i = 0; i < this.listHeight.length; i++) {
+        let height1 = this.listHeight[i]
+        let height2 = this.listHeight[i + 1]
+        if ((scrollY >= height1 && scrollY < height2) || !height2) {
+          this.currentIndex = i
+          break
+        }
+      }
     }
   },
   components: {
