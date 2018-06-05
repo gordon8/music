@@ -4,7 +4,7 @@
       <i class="iconfont icon-back"></i>
     </div>
     <h1 class="title" v-html="title"></h1>
-    <div class="bg-image" :style="bgStyle">
+    <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrap">
         <div class="play">
           <i class="iconfont icon-play"></i>
@@ -12,10 +12,30 @@
         </div>
       </div>
     </div>
+    <scroll :data="songs"
+            @scroll="scroll"
+            :listen-scroll="listenScroll"
+            :probe-type="probeType"
+            class="list"
+            ref="list"
+    >
+      <div class="song-list-wrap">
+        <song-list
+            :songs="songs"
+        >
+        </song-list>
+      </div>
+    </scroll>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+import Scroll from 'base/scroll/scroll'
+import Loading from 'base/loading/loading'
+import SongList from 'base/song-list/song-list'
+
+const RESERVED_HEIGHT = 40
+
 export default {
   name: 'music-list',
   props: {
@@ -29,7 +49,9 @@ export default {
     },
     songs: {
       type: Array,
-      default: []
+      default() {
+        return []
+      }
     }
   },
   computed: {
@@ -37,10 +59,27 @@ export default {
       return `background-image:url(${this.bgImage})`
     }
   },
+  created() {
+    this.listenScroll = true
+    this.probeType = 3
+  },
+  mounted() {
+    this.imageHeight = this.$refs.bgImage.clientHeight
+    this.minTranslateY = -this.imageHeight + RESERVED_HEIGHT
+    this.$refs.list.$el.style.top = `${this.imageHeight}px`
+  },
   methods: {
     back() {
       this.$router.back()
+    },
+    scroll() {
+      console.log('sc')
     }
+  },
+  components: {
+    Scroll,
+    Loading,
+    SongList
   }
 }
 </script>
@@ -116,6 +155,16 @@ export default {
           }
         }
       }
+    }
+    .list {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background-color: $color-background;
+    }
+    .song-list-wrap {
+      padding: 20px 30px;
     }
   }
 </style>

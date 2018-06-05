@@ -14,7 +14,7 @@ export default class Song {
 function createSong(musicData) {
   return new Song({
     id: musicData.songid,
-    mid :musicData.songmid,
+    mid: musicData.songmid,
     singer: filterSinger(musicData.singer),
     name: musicData.songname,
     album: musicData.albumname,
