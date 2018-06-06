@@ -5,13 +5,15 @@
     </div>
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
-      <div class="play-wrap">
+      <div class="play-wrap" ref="playBtn">
         <div class="play">
           <i class="iconfont icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
       </div>
     </div>
+    <!--滑动辅助层-->
+    <div class="bg-layer" ref="layer"></div>
     <scroll :data="songs"
             @scroll="scroll"
             :listen-scroll="listenScroll"
@@ -33,8 +35,10 @@
 import Scroll from 'base/scroll/scroll'
 import Loading from 'base/loading/loading'
 import SongList from 'base/song-list/song-list'
+import {prefixStyle} from 'common/js/dom'
 
 const RESERVED_HEIGHT = 40
+const transform = prefixStyle('transform')
 
 export default {
   name: 'music-list',
@@ -52,6 +56,11 @@ export default {
       default() {
         return []
       }
+    }
+  },
+  data() {
+    return {
+      scrollY: 0
     }
   },
   computed: {
@@ -72,8 +81,34 @@ export default {
     back() {
       this.$router.back()
     },
-    scroll() {
-      console.log('sc')
+    scroll(pos) {
+      this.scrollY = pos.y
+    }
+  },
+  watch: {
+    scrollY(newVal) {
+      let translateY = Math.max(this.minTranslateY, newVal)
+      let scale = 1
+      let zIndex = 0
+      const percent = Math.abs(newVal / this.imageHeight)
+      if (newVal > 0) {
+        scale = 1 + percent
+        zIndex = 10
+      }
+
+      this.$refs.layer.style[transform] = `translate3d(0, ${translateY}px, 0)`
+      if (newVal < this.minTranslateY) {
+        zIndex = 10
+        this.$refs.bgImage.style.paddingTop = 0
+        this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
+        this.$refs.playBtn.style.display = 'none'
+      } else {
+        this.$refs.bgImage.style.paddingTop = '70%'
+        this.$refs.bgImage.style.height = 0
+        this.$refs.playBtn.style.display = ''
+      }
+      this.$refs.bgImage.style.zIndex = zIndex
+      this.$refs.bgImage.style[transform] = `scale(${scale})`
     }
   },
   components: {
@@ -119,7 +154,7 @@ export default {
       font-size: $font-size-large;
       color: $color-text;
       @include no-wrap;
-      z-index: 10;
+      z-index: 20;
     }
     .bg-image {
       position: relative;
@@ -155,6 +190,11 @@ export default {
           }
         }
       }
+    }
+    .bg-layer {
+      position: relative;
+      height: 100%;
+      background-color: $color-background;
     }
     .list {
       position: fixed;
