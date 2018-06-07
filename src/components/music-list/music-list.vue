@@ -11,6 +11,7 @@
           <span class="text">随机播放全部</span>
         </div>
       </div>
+      <div class="filter" ref="filter"></div>
     </div>
     <!--滑动辅助层-->
     <div class="bg-layer" ref="layer"></div>
@@ -23,9 +24,13 @@
     >
       <div class="song-list-wrap">
         <song-list
-            :songs="songs"
+          :songs="songs"
+          @select="selectSong"
         >
         </song-list>
+      </div>
+      <div v-show="!songs.length" class="loading-wrap">
+        <loading></loading>
       </div>
     </scroll>
   </div>
@@ -36,9 +41,11 @@ import Scroll from 'base/scroll/scroll'
 import Loading from 'base/loading/loading'
 import SongList from 'base/song-list/song-list'
 import {prefixStyle} from 'common/js/dom'
+import {mapActions} from 'vuex'
 
 const RESERVED_HEIGHT = 40
 const transform = prefixStyle('transform')
+const backdrop = prefixStyle('backdrop-filter')
 
 export default {
   name: 'music-list',
@@ -83,20 +90,33 @@ export default {
     },
     scroll(pos) {
       this.scrollY = pos.y
-    }
+    },
+    selectSong(song, index) {
+      this.selectPlay({
+        list: this.songs,
+        index
+      })
+    },
+    ...mapActions([
+      'selectPlay'
+    ])
   },
   watch: {
     scrollY(newVal) {
       let translateY = Math.max(this.minTranslateY, newVal)
       let scale = 1
       let zIndex = 0
+      let blur = 0
       const percent = Math.abs(newVal / this.imageHeight)
       if (newVal > 0) {
         scale = 1 + percent
         zIndex = 10
+      } else {
+        blur = Math.min(20, percent * 20)
       }
 
       this.$refs.layer.style[transform] = `translate3d(0, ${translateY}px, 0)`
+      this.$refs.filter.style[backdrop] = `blur(${blur}px)`
       if (newVal < this.minTranslateY) {
         zIndex = 10
         this.$refs.bgImage.style.paddingTop = 0
@@ -190,6 +210,14 @@ export default {
           }
         }
       }
+      .filter {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(7, 17, 27, 0.4);
+      }
     }
     .bg-layer {
       position: relative;
@@ -205,6 +233,12 @@ export default {
     }
     .song-list-wrap {
       padding: 20px 30px;
+    }
+    .loading-wrap {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      transform: translateY(-50%);
     }
   }
 </style>
