@@ -1,5 +1,5 @@
 <template>
-  <div class="player">
+  <div class="player" v-show="playlist.length > 0">
     <div class="full-player" v-show="fullScreen">
       <div class="background">
         <img width="100%" height="100%" :src="currentSong.image">
@@ -25,15 +25,40 @@
         <div class="progress-bar-wrap">
         </div>
         <div class="operators">
-          <div class="icon"></div>
+          <div class="icon icon-left">
+            <i class="iconfont icon-loop"></i>
+          </div>
+          <div class="icon icon-left">
+            <i class="iconfont icon-circle_skip_previous"></i>
+          </div>
+          <div class="icon icon-center">
+            <i class="iconfont icon-play1"></i>
+          </div>
+          <div class="icon icon-right">
+            <i class="iconfont icon-circle_skip_next"></i>
+          </div>
+          <div class="icon icon-right">
+            <i class="iconfont icon-favorites"></i>
+          </div>
         </div>
       </div>
     </div>
     <div class="mini-player" v-show="!fullScreen" @click="open">
-      <div class="icon"></div>
-      <div class="text"></div>
-      <div class="control"></div>
-      <div class="control"></div>
+      <div class="icon">
+        <img class="cd-cover" width="40" height="40" :src="currentSong.image">
+      </div>
+      <div class="text">
+        <h2 class="name">{{currentSong.album}}</h2>
+        <p class="desc">{{currentSong.singer}}</p>
+      </div>
+      <div class="control">
+        <div class="progress-circle">
+          <i class="iconfont icon-play2"></i>
+        </div>
+      </div>
+      <div class="control">
+        <div class="iconfont icon-musicmenu"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -54,7 +79,8 @@ export default {
       'currentIndex',
       'fullScreen',
       'playing',
-      'currentSong'
+      'currentSong',
+      'playlist'
     ])
   },
   methods: {
@@ -163,6 +189,15 @@ export default {
         }
       }
       .bottom {
+        position: absolute;
+        bottom: 50px;
+        width: 100%;
+        .progress-bar-wrap {
+          display: flex;
+          width: 80%;
+          margin: 0 auto;
+          align-items: center;
+        }
         .operators {
           display: flex;
           align-items: center;
@@ -171,6 +206,22 @@ export default {
             color: $color-theme;
             &.disable {
               color: $color-theme-d;
+            }
+            i {
+              font-size: 30px;
+            }
+            &.icon-left {
+              text-align: right;
+            }
+            &.icon-right {
+              text-align: left;
+            }
+            &.icon-center {
+              padding: 0 20px;
+              text-align: center;
+              i {
+                font-size: 40px;
+              }
             }
           }
         }
@@ -186,6 +237,36 @@ export default {
       height: 60px;
       background-color: $color-highlight-background;
       z-index: 100;
+      .icon {
+        flex: 0 0 40px;
+        width: 40px;
+        padding: 0 10px 0 20px;
+        .cd-cover {
+          border-radius: 50%;
+        }
+      }
+      .text {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        line-height: 20px;
+        .name {
+          font-size: $font-size-medium;
+        }
+        .desc {
+          font-size: $font-size-small;
+          color: $color-text-d;
+        }
+      }
+      .control {
+        flex: 0 0 30px;
+        width: 30px;
+        padding: 0 10px;
+        color: $color-theme-d;
+        .iconfont {
+          font-size: 32px;
+        }
+      }
     }
   }
 </style>
