@@ -29,7 +29,7 @@
           <div class="dot-wrap"></div>
           <div class="progress-wrap">
             <span class="time time-l">{{format(currentTime)}}</span>
-            <progress-bar :percent="percent" class="progress-bar"></progress-bar>
+            <progress-bar @progressChange="onProgressChange" :percent="percent" class="progress-bar"></progress-bar>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
@@ -175,6 +175,13 @@ export default {
     end() {
 
     },
+    onProgressChange(precent) {
+      const currentTime = this.currentSong.duration * precent
+      this.$refs.audio.currentTime = currentTime
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+    },
     format(interval) {
       interval = interval | 0 // 取整相当于Number.parseInt()
       const minute = interval / 60 | 0
@@ -210,6 +217,18 @@ export default {
     })
   },
   watch: {
+    currentSong(newSong, oldSong) {
+      if (!newSong.id) {
+        return
+      }
+      if (newSong.id === oldSong.id) {
+        return
+      }
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        this.$refs.audio.play()
+      }, 1000)
+    },
     playing(newPlaying) {
       const audio = this.$refs.audio
       this.$nextTick(() => {
